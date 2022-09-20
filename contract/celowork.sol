@@ -225,7 +225,7 @@ contract CeloWork {
      * @param _decision a number representing the decision to approve or reject a cancel request.
      * @notice _decision can only be the number zero or one
      */
-    function reviewProposal(uint256 _decision, uint256 _jobListingIndex)
+    function reviewRequest(uint256 _decision, uint256 _jobListingIndex)
         public
         
     {
