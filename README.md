@@ -7,7 +7,7 @@
 4. Once work is done on the job, the owner of the job listing will then release the bounty to the proposal owner.
 
 ### Live Demo
-[https://calm-licorice-b72de4.netlify.app/)
+[https://dindeed.netlify.app/)
 
 # Install
 
