@@ -90,6 +90,43 @@ contract CeloWork {
         _jobListing.proposalsLength = 0;
     }
 
+
+    //write proposal
+        //given a job listing index, add a proposal to the corresponding job listing's proposal mapping
+    function writeProposal (
+        uint _jobListingIndex,
+        string memory _email,
+        string memory _proposalBody
+    ) external {
+        require(jobListings[_jobListingIndex].status != JobListingStatus.PaidProposal, "Proposal already paid");
+        jobListings[_jobListingIndex].proposals[jobListings[_jobListingIndex].proposalsLength] = Proposal(
+            payable(msg.sender),
+            _email,
+            _proposalBody
+        );
+        jobListings[_jobListingIndex].proposalsLength++;
+    }
+
+    //select proposal
+        //given a job listing index and a proposal index, mark the proposal as active
+    function selectProposal (uint _jobListingIndex, uint _proposalIndex) external onlyJobListingOwner (_jobListingIndex) {
+        jobListings[_jobListingIndex].activeProposal = _proposalIndex;
+        jobListings[_jobListingIndex].status = JobListingStatus.ActiveProposal;
+    }
+
+    //pay proposal
+        //given a job listing index, pay the corresponding active proposal the bounty of the job listing
+    function payProposal (uint _jobListingIndex) external onlyJobListingOwner (_jobListingIndex) {
+        require(
+            IERC20Token(cUsdTokenAddress).transfer(
+                payable(jobListings[_jobListingIndex].proposals[jobListings[_jobListingIndex].activeProposal].owner),
+                jobListings[_jobListingIndex].bounty
+            ),
+            "Transfer failed."
+        );
+        jobListings[_jobListingIndex].status = JobListingStatus.PaidProposal;
+    }
+
     //read job listing
         //given an index, return the fields of the corresponding job listing
     function readJobListing (uint _index) public view returns (
@@ -112,22 +149,6 @@ contract CeloWork {
         );
     }
 
-    //write proposal
-        //given a job listing index, add a proposal to the corresponding job listing's proposal mapping
-    function writeProposal (
-        uint _jobListingIndex,
-        string memory _email,
-        string memory _proposalBody
-    ) external {
-        jobListings[_jobListingIndex].proposals[jobListings[_jobListingIndex].proposalsLength] = Proposal(
-            payable(msg.sender),
-            _email,
-            _proposalBody
-        );
-
-        jobListings[_jobListingIndex].proposalsLength++;
-    }
-
     //read proposal
         //given a job listing index and a proposal index, return the fields of the corresponding proposal
     function readProposal (uint _jobListingIndex, uint _proposalIndex) external view returns (
@@ -140,26 +161,6 @@ contract CeloWork {
             jobListings[_jobListingIndex].proposals[_proposalIndex].email,
             jobListings[_jobListingIndex].proposals[_proposalIndex].proposalBody
         );
-    }
-
-    //select proposal
-        //given a job listing index and a proposal index, mark the proposal as active
-    function selectProposal (uint _jobListingIndex, uint _proposalIndex) external onlyJobListingOwner (_jobListingIndex) {
-        jobListings[_jobListingIndex].activeProposal = _proposalIndex;
-        jobListings[_jobListingIndex].status = JobListingStatus.ActiveProposal;
-    }
-
-    //pay proposal
-        //given a job listing index, pay the corresponding active proposal the bounty of the job listing
-    function payProposal (uint _jobListingIndex) external onlyJobListingOwner (_jobListingIndex) {
-        require(
-            IERC20Token(cUsdTokenAddress).transfer(
-                payable(jobListings[_jobListingIndex].proposals[jobListings[_jobListingIndex].activeProposal].owner),
-                jobListings[_jobListingIndex].bounty
-            ),
-            "Transfer failed."
-        );
-        jobListings[_jobListingIndex].status = JobListingStatus.PaidProposal;
     }
 
     //get job listing mapping length
